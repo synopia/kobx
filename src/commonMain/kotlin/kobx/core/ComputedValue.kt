@@ -1,5 +1,6 @@
 package kobx.core
 
+import kobx.api.Kobx
 import kobx.api.autorun
 
 interface IComputedValue<T> {
@@ -138,7 +139,7 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
     override fun observe(listener: (ComputedDidChange<T>) -> Unit, fireImmediately: Boolean) : ReactionDisposer {
         var firstTime = true
         var prevValue : T? = null
-        return autorun() {
+        return Kobx.autorun() {
             val newValue = get()
             if( !firstTime || fireImmediately ){
                 val prevU = GlobalState.untrackedStart()
