@@ -24,8 +24,8 @@ open class Atom(override var name: String="Atom@${GlobalState.nextId()}"): IAtom
     override var lastAccessedBy: Int = 0
     override var lowestObserverState: DerivationState = DerivationState.NOT_TRACKING
 
-    override var onBOL: MutableSet<() -> Unit> = mutableSetOf()
-    override var onBUOL: MutableSet<() -> Unit> = mutableSetOf()
+    override val onBOL: MutableSet<() -> Unit> = mutableSetOf()
+    override val onBUOL: MutableSet<() -> Unit> = mutableSetOf()
 
     override fun onBO() {
         onBOL.forEach { it() }

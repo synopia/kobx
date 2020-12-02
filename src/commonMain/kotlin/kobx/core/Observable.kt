@@ -18,8 +18,8 @@ interface IObservable : IDepTreeNode {
     fun onBUO()
     fun onBO()
 
-    var onBUOL: MutableSet<()->Unit>
-    var onBOL: MutableSet<()->Unit>
+    val onBUOL: MutableSet<()->Unit>
+    val onBOL: MutableSet<()->Unit>
 
     fun hasObservers() = observers.isNotEmpty()
     fun addObserver(node: IDerivation) {

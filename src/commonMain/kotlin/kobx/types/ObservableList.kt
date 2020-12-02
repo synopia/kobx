@@ -57,9 +57,10 @@ interface IObservableList<T>: MutableList<T> {
 }
 
 class ObservableList<T>(
-    private val list: MutableList<T>,
+    initialData: List<T>,
     name: String = "ObservableList@${GlobalState.nextId()}"
 ): MutableList<T>, IObservableList<T>, IInterceptable<ListWillChange<T>>, IListenable<ListDidChange<T>>  {
+    private val list = initialData.toMutableList()
     override var interceptors: MutableList<IInterceptor<ListWillChange<T>>>? = null
     override var changeListeners: MutableList<(ListDidChange<T>) -> Unit>? = null
     val atom : IAtom = Atom(name)

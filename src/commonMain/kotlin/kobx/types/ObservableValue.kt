@@ -5,36 +5,36 @@ import kobx.core.GlobalState
 
 data class ValueWillChange<T>(
     val obj: IObservableValue<T>,
-    val newValue: T
+    val newValue: T?
 )
 data class ValueDidChange<T>(
     val obj: IObservableValue<T>,
-    val newValue: T,
+    val newValue: T?,
     val oldValue: T?
 )
 
 interface IObservableValue<T> {
-    fun get(): T
-    fun set(value: T)
+    fun get(): T?
+    fun set(value: T?)
     fun intercept(handler: IInterceptor<ValueWillChange<T>>): ()->Unit
     fun observe(listener: (ValueDidChange<T>)->Unit, fireImmediately: Boolean=false) : ()->Unit
 }
 
 class ObservableValue<T>(
-    var value: T,
+    var value: T?,
     name: String = "ObservableValue@${GlobalState.nextId()}"
 ): Atom(name), IObservableValue<T>, IInterceptable<ValueWillChange<T>>, IListenable<ValueDidChange<T>> {
     var hasUnreportedChange = false
     override var interceptors: MutableList<IInterceptor<ValueWillChange<T>>>? = null
     override var changeListeners: MutableList<(ValueDidChange<T>) -> Unit>? = null
 
-    override fun set(value: T) {
+    override fun set(value: T?) {
         val oldValue = this.value
         val newValue = prepareNewValue(value)
         setNewValue(newValue)
     }
 
-    private fun prepareNewValue(value: T): T {
+    fun prepareNewValue(value: T?): T? {
         checkIfStateModificationsAreAllowed()
         var newValue = value
         if( hasInterceptors() ) {
@@ -43,7 +43,7 @@ class ObservableValue<T>(
         return newValue
     }
 
-    fun setNewValue(newValue: T){
+    fun setNewValue(newValue: T?){
         val oldValue = value
         value = newValue
         reportChanged()
@@ -52,7 +52,7 @@ class ObservableValue<T>(
         }
     }
 
-    override fun get(): T {
+    override fun get(): T? {
         reportObserved()
         return value
     }

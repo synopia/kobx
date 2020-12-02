@@ -28,7 +28,7 @@ class BasicTest {
         var changes = emptyList<String>()
         val msg = Message()
         val disposer = Kobx.autorun {
-            changes += "${msg.title} from ${msg.author.name}"
+            changes += "${msg.title} from ${msg.author?.name}"
         }
 
         runInAction {
@@ -38,7 +38,7 @@ class BasicTest {
             msg.author = Author("ZZ")
         }
         runInAction {
-            msg.author.name = "Y"
+            msg.author?.name = "Y"
         }
         assertEquals(listOf(" from ", "X from ", "X from ZZ", "X from Y"), changes)
         assertEquals(3, disposer.kobx.toDependencyTree().dependencies.size)
@@ -53,7 +53,7 @@ class BasicTest {
             msg.author = Author("ZZ")
         }
         runInAction {
-            msg.author.name = "Y"
+            msg.author?.name = "Y"
         }
         assertEquals(listOf(" from ", "X from ", "X from ZZ", "X from Y"), changes)
 
@@ -67,7 +67,7 @@ class BasicTest {
         val c = ComputedValue(ComputedValueOptions({
             calcs++
             if( a.get()==1 ) {
-                b.get()*a.get()*b.get()
+                b.get()!!*a.get()!!*b.get()!!
             } else {
                 3
             }
