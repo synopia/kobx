@@ -49,7 +49,7 @@ interface IObservable : IDepTreeNode {
                 lastAccessedBy = derivation.runId
                 derivation.newObserving!! += this
                 derivation.unboundDepsCount++
-                if( !isBeingObserved && GlobalState.trackingContext!=null ) {
+                if( !isBeingObserved && (GlobalState.trackingContext!=null|| GlobalState.trackingReaction!=null) ) {
                     isBeingObserved = true
                     onBO()
                 }

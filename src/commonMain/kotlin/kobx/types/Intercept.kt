@@ -17,7 +17,7 @@ interface IInterceptable<T> {
             interceptors!!.remove(handler)
         }
     }
-    fun interceptChange(change: T) : T {
+    fun interceptChange(change: T) : T? {
         val prevU = GlobalState.untrackedStart()
         try {
             val list = interceptors?.toList() ?: emptyList()

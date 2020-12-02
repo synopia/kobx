@@ -30,9 +30,9 @@ data class MapWillChange<K,V>(
         fun <K,V> update(obj: IObservableMap<K,V>, key: K, newValue: V) =
             MapWillChange(obj, MapChangeType.Update, key, newValue)
         fun <K,V> add(obj: IObservableMap<K,V>, key: K, newValue: V) =
-            MapWillChange(obj, MapChangeType.Update, key, newValue)
+            MapWillChange(obj, MapChangeType.Add, key, newValue)
         fun <K,V> delete(obj: IObservableMap<K,V>, key: K) =
-            MapWillChange(obj, MapChangeType.Update, key)
+            MapWillChange(obj, MapChangeType.Delete, key)
     }
 }
 
@@ -47,9 +47,9 @@ data class MapDidChange<K,V>(
         fun <K,V> update(obj: IObservableMap<K,V>, key: K, newValue: V, oldValue: V?) =
             MapDidChange(obj, MapChangeType.Update, key, newValue, oldValue)
         fun <K,V> add(obj: IObservableMap<K,V>, key: K, newValue: V) =
-            MapDidChange(obj, MapChangeType.Update, key, newValue)
+            MapDidChange(obj, MapChangeType.Add, key, newValue)
         fun <K,V> delete(obj: IObservableMap<K,V>, key: K, oldValue: V) =
-            MapDidChange(obj, MapChangeType.Update, key, null, oldValue)
+            MapDidChange(obj, MapChangeType.Delete, key, null, oldValue)
     }
 }
 
@@ -62,8 +62,8 @@ class ObservableMap<K,V>(
     initialData: Map<K,V>,
     name: String = "ObservableMap@${GlobalState.nextId()}"
 ): MutableMap<K,V>, IObservableMap<K,V>, IInterceptable<MapWillChange<K,V>>, IListenable<MapDidChange<K,V>> {
-    private val data = mutableMapOf<K, ObservableValue<V>>()
-    private val hasMap = mutableMapOf<K, ObservableValue<Boolean>>()
+    internal val data = mutableMapOf<K, ObservableValue<V>>()
+    internal val hasMap = mutableMapOf<K, ObservableValue<Boolean>>()
 
     override var interceptors: MutableList<IInterceptor<MapWillChange<K, V>>>? = null
     override var changeListeners: MutableList<(MapDidChange<K, V>) -> Unit>? = null
@@ -81,7 +81,9 @@ class ObservableMap<K,V>(
 
         val entry = hasMap.getOrPut(key) {
             val newEntry = ObservableValue(data.containsKey(key))
-            newEntry.onBUOL += { hasMap.remove(key) }
+            newEntry.onBUOL += {
+                hasMap.remove(key)
+            }
             newEntry
         }
         return entry.get()!!
@@ -96,7 +98,7 @@ class ObservableMap<K,V>(
             } else {
                 interceptChange(MapWillChange.add(this, key, value))
             }
-            v = change.newValue!!
+            v = change?.newValue ?: value
         }
         if (hasKey) {
             updateValue(key, v)
@@ -110,7 +112,7 @@ class ObservableMap<K,V>(
         keysAtom.checkIfStateModificationsAreAllowed()
         if( hasInterceptors() ) {
             val change = interceptChange(MapWillChange.delete(this, key))
-            if( change.newValue==null ) {
+            if( change?.newValue==null ) {
                 return null
             }
         }
@@ -138,8 +140,8 @@ class ObservableMap<K,V>(
     }
     private fun updateValue(key: K, newValue: V?) {
         val obs = data[key]!!
-        val value = obs.prepareNewValue(newValue)
-        if( value!=null ) {
+        val (value, changed) = obs.prepareNewValue(newValue)
+        if( value!=null && changed ) {
             val change = MapDidChange.update(this, key, value, obs.value)
             obs.setNewValue(value)
             if( hasListeners() ) {
@@ -150,7 +152,7 @@ class ObservableMap<K,V>(
 
     private fun addValue(key: K, newValue: V) {
         keysAtom.checkIfStateModificationsAreAllowed()
-        var value = Kobx.transaction {
+        val value = Kobx.transaction {
             val obs = ObservableValue(newValue)
             data[key] = obs
             val value = obs.value!!
@@ -158,14 +160,18 @@ class ObservableMap<K,V>(
             keysAtom.reportChanged()
             value
         }
-        val change = MapDidChange.add(this, key, newValue)
+        val change = MapDidChange.add(this, key, value)
         if( hasListeners() ) {
             notifyListeners(change)
         }
     }
 
     override fun get(key: K): V? {
-        return data[key]?.get()
+        return if( containsKey(key)) {
+            data[key]?.get()
+        } else {
+            null
+        }
     }
 
     override val keys: MutableSet<K>
@@ -183,8 +189,8 @@ class ObservableMap<K,V>(
     override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
         get() {
             keysAtom.reportObserved()
-            throw NotImplementedError()
-//            return data.entries.map { SimpleEntry(it.key, it.value.get()!!) }.toMutableSet()
+            val map: List<SimpleEntry<K, V>> = data.entries.map { SimpleEntry(it.key, it.value.get()!!) }
+            return map.toMutableSet()
         }
 
     override val size: Int

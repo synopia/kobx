@@ -123,7 +123,7 @@ interface IDerivation: IDepTreeNode {
     }
 
     fun clearObserving() {
-        val obs = observing
+        val obs = observing.toList()
         observing.clear()
         obs.forEach { it.removeObserver(this) }
         dependenciesState = DerivationState.NOT_TRACKING

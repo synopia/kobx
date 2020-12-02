@@ -16,6 +16,7 @@ class State {
     var inBatch: Int = 0
     var trackingDerivation: IDerivation? = null
     var trackingContext: IComputedValue<*>? = null
+    var trackingReaction: Reaction? = null
     val pendingUnobservations = mutableListOf<IObservable>()
     val pendingReactions = mutableListOf<Reaction>()
     var isRunningReactions = false

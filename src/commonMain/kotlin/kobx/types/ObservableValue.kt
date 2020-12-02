@@ -7,11 +7,14 @@ data class ValueWillChange<T>(
     val obj: IObservableValue<T>,
     val newValue: T?
 )
+
 data class ValueDidChange<T>(
     val obj: IObservableValue<T>,
     val newValue: T?,
     val oldValue: T?
 )
+
+data class ChangedValue<T>(val value: T?, val hasChanged: Boolean)
 
 interface IObservableValue<T> {
     fun get(): T?
@@ -24,23 +27,23 @@ class ObservableValue<T>(
     var value: T?,
     name: String = "ObservableValue@${GlobalState.nextId()}"
 ): Atom(name), IObservableValue<T>, IInterceptable<ValueWillChange<T>>, IListenable<ValueDidChange<T>> {
-    var hasUnreportedChange = false
     override var interceptors: MutableList<IInterceptor<ValueWillChange<T>>>? = null
     override var changeListeners: MutableList<(ValueDidChange<T>) -> Unit>? = null
 
     override fun set(value: T?) {
-        val oldValue = this.value
-        val newValue = prepareNewValue(value)
-        setNewValue(newValue)
+        val (newValue, changed) = prepareNewValue(value)
+        if( changed ) {
+            setNewValue(newValue)
+        }
     }
 
-    fun prepareNewValue(value: T?): T? {
+    fun prepareNewValue(value: T?): ChangedValue<T> {
         checkIfStateModificationsAreAllowed()
         var newValue = value
         if( hasInterceptors() ) {
-            newValue = interceptChange(ValueWillChange(this, newValue)).newValue
+            newValue = interceptChange(ValueWillChange(this, newValue))?.newValue ?: newValue
         }
-        return newValue
+        return ChangedValue(newValue, newValue!=this.value)
     }
 
     fun setNewValue(newValue: T?){

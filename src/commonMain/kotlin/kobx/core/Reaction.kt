@@ -57,10 +57,10 @@ class Reaction(
         }
         GlobalState.startBatch()
         isRunning = true
-        val prev = GlobalState.trackingDerivation
-        GlobalState.trackingDerivation = this
+        val prev = GlobalState.trackingReaction
+        GlobalState.trackingReaction = this
         val result = trackDerivedFunction(fn)
-        GlobalState.trackingDerivation = prev
+        GlobalState.trackingReaction = prev
         isRunning = false
         isTrackPending = false
         if( isDisposed ) {

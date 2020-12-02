@@ -3,7 +3,6 @@ package kobx.types
 import kobx.core.Atom
 import kobx.core.GlobalState
 import kobx.core.IAtom
-import kotlin.jvm.JvmName
 import kotlin.math.max
 import kotlin.math.min
 
@@ -81,8 +80,7 @@ class ObservableList<T>(
         val oldValue = list[index]
         var new = element
         if( hasInterceptors() ) {
-            val changed = interceptChange(ListWillChange.update(this, index, new))
-            new = changed.newValue!!
+            new = interceptChange(ListWillChange.update(this, index, new))?.newValue ?: new
         }
         list[index] = new
         notifyListChildUpdate(index, new, oldValue)
@@ -114,8 +112,10 @@ class ObservableList<T>(
         var items = newItems
         if( hasInterceptors() ) {
             val change = interceptChange(ListWillChange.splice(this, i, newItems, d))
-            d = change.removed!!
-            items = change.added!!
+            if( change!=null ) {
+                d = change.removed!!
+                items = change.added!!
+            }
         }
 
         val res = spliceItemsIntoValues(i, d, items)
