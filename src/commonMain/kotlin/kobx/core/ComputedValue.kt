@@ -34,17 +34,15 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
     override var lowestObserverState: DerivationState = DerivationState.UP_TO_DATE
     override var unboundDepsCount: Int = 0
     override var mapId: String = "#${GlobalState.nextId()}"
-    var value: ResultOrError<T>? = null
+    private var value: ResultOrError<T>? = null
     override var name: String = opts.name ?: "ComputedValue@${GlobalState.nextId()}"
-    var triggeredBy: String? = null
-    var isComputing: Boolean = false
+    private var isComputing: Boolean = false
     var isRunningSetter: Boolean = false
     var derivation: ()->T = opts.get
-    var setter: ((T)->Unit)? = null
+    private var setter: ((T)->Unit)? = null
     override var isTracing: Boolean = false
-    var scope: Any? = opts.context
-    var requiresReaction: Boolean = opts.requiresReaction
-    var keepAlive: Boolean = opts.keepAlive
+    private var requiresReaction: Boolean = opts.requiresReaction
+    private var keepAlive: Boolean = opts.keepAlive
     override var requiresObservable: Boolean? = true
     override var onBUOL: MutableSet<() -> Unit> = mutableSetOf()
     override var onBOL: MutableSet<() -> Unit> = mutableSetOf()
@@ -108,7 +106,7 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
         }
     }
 
-    fun trackAndCompute() : Boolean {
+    private fun trackAndCompute() : Boolean {
         val oldValue = value
         val wasSuspended = dependenciesState==DerivationState.NOT_TRACKING
         val newValue = computeValue(true)
@@ -119,7 +117,7 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
         return changed
     }
 
-    fun computeValue(track: Boolean) : ResultOrError<T> {
+    private fun computeValue(track: Boolean) : ResultOrError<T> {
         isComputing = true
         val prev = GlobalState.allowStateChangesStart(false)
         val result = if( track ){
@@ -150,7 +148,7 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
     override fun observe(listener: (ComputedDidChange<T>) -> Unit, fireImmediately: Boolean) : ReactionDisposer {
         var firstTime = true
         var prevValue : T? = null
-        return Kobx.autorun() {
+        return Kobx.autorun {
             val newValue = get()
             if( !firstTime || fireImmediately ){
                 val prevU = GlobalState.untrackedStart()
@@ -162,7 +160,7 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
         }
     }
 
-    fun warnAboutUntrackedRead() {
+    private fun warnAboutUntrackedRead() {
         if( requiresReaction ) {
             throw IllegalStateException("ComputedValue $name is read outside a reactive context")
         }

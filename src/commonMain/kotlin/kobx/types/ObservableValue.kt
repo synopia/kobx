@@ -7,44 +7,44 @@ import kotlin.reflect.KProperty
 
 data class ValueWillChange<T>(
     val obj: IObservableValue<T>,
-    val newValue: T?
+    val newValue: T
 )
 
 data class ValueDidChange<T>(
     val obj: IObservableValue<T>,
-    val newValue: T?,
-    val oldValue: T?
+    val newValue: T,
+    val oldValue: T
 )
 
-data class ChangedValue<T>(val value: T?, val hasChanged: Boolean)
+data class ChangedValue<T>(val value: T, val hasChanged: Boolean)
 
 interface IObservableValue<T> {
-    fun get(): T?
-    fun set(value: T?)
+    fun get(): T
+    fun set(value: T)
     fun intercept(handler: IInterceptor<ValueWillChange<T>>): ()->Unit
     fun observe(listener: (ValueDidChange<T>)->Unit, fireImmediately: Boolean=false) : ()->Unit
 }
 
 class ObservableValue<T>(
-    var value: T?,
+    var value: T,
     name: String = "ObservableValue@${GlobalState.nextId()}"
 ): Atom(name),
     IObservableValue<T>,
     IInterceptable<ValueWillChange<T>>,
     IListenable<ValueDidChange<T>>,
-    ReadWriteProperty<Any, T?>
+    ReadWriteProperty<Any, T>
 {
     override var interceptors: MutableList<IInterceptor<ValueWillChange<T>>>? = null
     override var changeListeners: MutableList<(ValueDidChange<T>) -> Unit>? = null
 
-    override fun set(value: T?) {
+    override fun set(value: T) {
         val (newValue, changed) = prepareNewValue(value)
         if( changed ) {
             setNewValue(newValue)
         }
     }
 
-    fun prepareNewValue(value: T?): ChangedValue<T> {
+    fun prepareNewValue(value: T): ChangedValue<T> {
         checkIfStateModificationsAreAllowed()
         var newValue = value
         if( hasInterceptors() ) {
@@ -53,7 +53,7 @@ class ObservableValue<T>(
         return ChangedValue(newValue, newValue!=this.value)
     }
 
-    fun setNewValue(newValue: T?){
+    fun setNewValue(newValue: T){
         val oldValue = value
         value = newValue
         reportChanged()
@@ -62,7 +62,7 @@ class ObservableValue<T>(
         }
     }
 
-    override fun get(): T? {
+    override fun get(): T {
         reportObserved()
         return value
     }
@@ -73,7 +73,7 @@ class ObservableValue<T>(
 
     override fun observe(listener: (ValueDidChange<T>) -> Unit, fireImmediately: Boolean): () -> Unit {
         if( fireImmediately ) {
-            listener(ValueDidChange(this, value, null))
+            listener(ValueDidChange(this, value, value))
         }
         return registerListener(listener)
     }
@@ -82,11 +82,11 @@ class ObservableValue<T>(
         return "$name[$value]"
     }
 
-    override fun getValue(thisRef: Any, property: KProperty<*>): T? {
+    override fun getValue(thisRef: Any, property: KProperty<*>): T {
         return get()
     }
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: T?) {
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
         set(value)
     }
 

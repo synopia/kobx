@@ -12,7 +12,7 @@ class TestReaction {
         val a = Kobx.observable(1)
         val values : MutableList<Pair<Int,Int>> = mutableListOf()
 
-        val d = Kobx.reaction({ a.get() }, { new,old-> values+=Pair(new!!,old!!)})
+        val d = Kobx.reaction({ a.get() }, { new,old-> values+=Pair(new,old)})
 
         a.set(2)
         a.set(3)
@@ -26,7 +26,7 @@ class TestReaction {
     fun testFireImmediately() {
         val a = Kobx.observable(1)
         val values : MutableList<Int> = mutableListOf()
-        val d= Kobx.reaction({ a.get() }, { new, _ ->values+=new!!}, AutorunOptions(fireImmediately =true))
+        val d= Kobx.reaction({ a.get() }, { new, _ ->values+=new}, AutorunOptions(fireImmediately =true))
 
         a.set(2)
         a.set(3)
@@ -42,7 +42,7 @@ class TestReaction {
         val b = Kobx.observable(2)
         val values = mutableListOf<Int>()
 
-        val d = Kobx.reaction({a.get()}, {new,_->values += new!!*b.get()!!}, AutorunOptions(fireImmediately = true))
+        val d = Kobx.reaction({a.get()}, {new,_->values += new*b.get()}, AutorunOptions(fireImmediately = true))
 
         a.set(2)
         b.set(7)

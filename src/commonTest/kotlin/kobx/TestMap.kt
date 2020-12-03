@@ -2,7 +2,6 @@ package kobx
 
 import kobx.api.Kobx
 import kobx.api.autorun
-import kobx.types.MapChangeType
 import kobx.types.MapDidChange
 import kobx.types.ObservableMap
 import kobx.types.SimpleEntry

@@ -10,7 +10,7 @@ data class ReactionDisposer(
 class Reaction(
     override var name: String = "Reaction@${GlobalState.nextId()}",
     val onInvalidate: Reaction.()->Unit,
-    val errorHandler: (IDerivation.(error: Throwable)->Unit)? = null,
+    private val errorHandler: (IDerivation.(error: Throwable)->Unit)? = null,
     override var requiresObservable: Boolean? = false
 ): IDerivation, IReaction {
 
@@ -23,8 +23,8 @@ class Reaction(
     override var mapId: String = "#${GlobalState.nextId()}"
     var isDisposed = false
     var isScheduled = false
-    var isTrackPending = false
-    var isRunning = false
+    private var isTrackPending = false
+    private var isRunning = false
     override var isTracing: Boolean = false
 
     override fun onBecomeStale() {

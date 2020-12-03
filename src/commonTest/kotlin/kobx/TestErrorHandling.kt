@@ -2,9 +2,6 @@ package kobx
 
 import kobx.api.Kobx
 import kobx.api.autorun
-import kobx.api.runInAction
-import kobx.core.ComputedValue
-import kobx.core.ComputedValueOptions
 import kobx.core.GlobalState
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,7 +20,7 @@ class TestErrorHandling {
         }
     }
 
-    fun checkState() {
+    private fun checkState() {
         assertEquals(false, GlobalState.isRunningReactions)
         assertEquals(null, GlobalState.trackingDerivation)
         assertEquals(0, GlobalState.inBatch)
@@ -32,7 +29,7 @@ class TestErrorHandling {
     }
     @Test
     fun testError1() {
-        val a = Kobx.computed {
+        val a = Kobx.computed<Int> {
             throw IllegalStateException("blah")
         }
         assertFails { a.get() }

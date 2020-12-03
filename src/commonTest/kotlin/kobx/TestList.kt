@@ -3,20 +3,21 @@ package kobx
 import kobx.api.Kobx
 import kobx.api.Observable
 import kobx.api.autorun
-import kobx.api.runInAction
 import kobx.core.ComputedValue
 import kobx.core.ComputedValueOptions
 import kobx.types.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.expect
 
 class TestList {
+    fun <T> assertEquals(expected: List<T>, actual:ObservableList<T>) {
+        assertEquals(expected, actual.list)
+    }
     @Test
     fun test1() {
         val a = Observable.list(mutableListOf<Int>())
         assertEquals(0, a.size)
-        assertEquals(listOf<Int>(), a)
+        assertEquals(listOf(), a)
 
         a += 1
         assertEquals(1, a.size)

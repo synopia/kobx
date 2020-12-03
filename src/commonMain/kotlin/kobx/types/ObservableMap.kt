@@ -62,12 +62,12 @@ class ObservableMap<K,V>(
     initialData: Map<K,V>,
     name: String = "ObservableMap@${GlobalState.nextId()}"
 ): MutableMap<K,V>, IObservableMap<K,V>, IInterceptable<MapWillChange<K,V>>, IListenable<MapDidChange<K,V>> {
-    internal val data = mutableMapOf<K, ObservableValue<V>>()
+    internal val data = mutableMapOf<K, ObservableValue<V?>>()
     internal val hasMap = mutableMapOf<K, ObservableValue<Boolean>>()
 
     override var interceptors: MutableList<IInterceptor<MapWillChange<K, V>>>? = null
     override var changeListeners: MutableList<(MapDidChange<K, V>) -> Unit>? = null
-    val keysAtom: IAtom = Atom(name)
+    private val keysAtom: IAtom = Atom(name)
 
     init {
         putAll(initialData)
@@ -86,7 +86,7 @@ class ObservableMap<K,V>(
             }
             newEntry
         }
-        return entry.get()!!
+        return entry.get()
     }
 
     override fun put(key: K, value: V): V? {
@@ -138,7 +138,7 @@ class ObservableMap<K,V>(
     private fun updateHasMapEntry(key: K, value: Boolean) {
         hasMap[key]?.setNewValue(value)
     }
-    private fun updateValue(key: K, newValue: V?) {
+    private fun updateValue(key: K, newValue: V) {
         val obs = data[key]!!
         val (value, changed) = obs.prepareNewValue(newValue)
         if( value!=null && changed ) {
@@ -153,7 +153,7 @@ class ObservableMap<K,V>(
     private fun addValue(key: K, newValue: V) {
         keysAtom.checkIfStateModificationsAreAllowed()
         val value = Kobx.transaction {
-            val obs = ObservableValue(newValue)
+            val obs = ObservableValue(newValue as V?)
             data[key] = obs
             val value = obs.value!!
             updateHasMapEntry(key, true)
