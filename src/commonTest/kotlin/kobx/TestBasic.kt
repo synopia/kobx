@@ -11,11 +11,11 @@ import kotlin.test.assertEquals
 
 class BasicTest {
     class Author(name: String) {
-        var name by observable(name)
+        var name by Kobx.observable(name)
     }
     class Message{
-        var title by observable("")
-        var author by observable(Author(""))
+        var title by Kobx.observable("")
+        var author by Kobx.observable(Author(""))
     }
 
     @BeforeTest

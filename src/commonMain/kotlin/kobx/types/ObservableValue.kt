@@ -2,6 +2,8 @@ package kobx.types
 
 import kobx.core.Atom
 import kobx.core.GlobalState
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 data class ValueWillChange<T>(
     val obj: IObservableValue<T>,
@@ -26,7 +28,12 @@ interface IObservableValue<T> {
 class ObservableValue<T>(
     var value: T?,
     name: String = "ObservableValue@${GlobalState.nextId()}"
-): Atom(name), IObservableValue<T>, IInterceptable<ValueWillChange<T>>, IListenable<ValueDidChange<T>> {
+): Atom(name),
+    IObservableValue<T>,
+    IInterceptable<ValueWillChange<T>>,
+    IListenable<ValueDidChange<T>>,
+    ReadWriteProperty<Any, T?>
+{
     override var interceptors: MutableList<IInterceptor<ValueWillChange<T>>>? = null
     override var changeListeners: MutableList<(ValueDidChange<T>) -> Unit>? = null
 
@@ -74,4 +81,13 @@ class ObservableValue<T>(
     override fun toString(): String {
         return "$name[$value]"
     }
+
+    override fun getValue(thisRef: Any, property: KProperty<*>): T? {
+        return get()
+    }
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: T?) {
+        set(value)
+    }
+
 }

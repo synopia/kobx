@@ -1,5 +1,7 @@
 package kobx.core
 
+data class ResultOrError<out T>(val result: T? =null, val error: Throwable? =null)
+
 enum class DerivationState {
     NOT_TRACKING,
     UP_TO_DATE,
@@ -16,7 +18,7 @@ interface IDerivation: IDepTreeNode {
     var unboundDepsCount: Int
     var mapId: String
     var isTracing: Boolean
-    var requiresObservable: Boolean
+    var requiresObservable: Boolean?
 
     fun onBecomeStale()
 
@@ -30,7 +32,17 @@ interface IDerivation: IDepTreeNode {
                 val prevUntracked = GlobalState.untrackedStart()
                 observing.forEach { obs->
                     if( obs is ComputedValue<*> ) {
-                        obs.get()
+                        if( GlobalState.disableErrorBoundaries ) {
+                            obs.get()
+                        } else {
+                            try {
+                                obs.get()
+                            } catch (e:Throwable) {
+                                GlobalState.untrackedEnd(prevUntracked)
+                                GlobalState.allowStateReadsEnd(prevAllowStateReads)
+                                return true
+                            }
+                        }
                         if( dependenciesState==DerivationState.STALE ) {
                             GlobalState.untrackedEnd(prevUntracked)
                             GlobalState.allowStateReadsEnd(prevAllowStateReads)
@@ -48,7 +60,7 @@ interface IDerivation: IDepTreeNode {
 
     fun isComputingDerivation() = GlobalState.trackingDerivation!=null
 
-    fun <T> trackDerivedFunction(f: ()->T): T {
+    fun <T> trackDerivedFunction(f: ()->T): ResultOrError<T> {
         val prevAllowStateReads = GlobalState.allowStateReadsStart(true)
         changeDependenciesStateTo0()
         newObserving = mutableListOf()
@@ -57,7 +69,15 @@ interface IDerivation: IDepTreeNode {
         val prevTracking = GlobalState.trackingDerivation
         GlobalState.trackingDerivation = this
         GlobalState.inBatch++
-        val result = f()
+        val result = if( GlobalState.disableErrorBoundaries ) {
+            ResultOrError(f())
+        } else {
+            try {
+                ResultOrError(f())
+            } catch (e:Throwable) {
+                ResultOrError(null, e)
+            }
+        }
         GlobalState.inBatch--
         GlobalState.trackingDerivation = prevTracking
         bindDependencies()
@@ -71,7 +91,7 @@ interface IDerivation: IDepTreeNode {
         if( observing.isNotEmpty() ) {
             return
         }
-        if( GlobalState.reactionRequiresObservable || requiresObservable ) {
+        if( GlobalState.reactionRequiresObservable || requiresObservable==true ) {
             println("Derivation $name is created/updated without reading any observable value")
         }
     }

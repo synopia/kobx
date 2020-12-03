@@ -1,7 +1,7 @@
 package kobx.api
 
-import kobx.core.executeAction0
+import kobx.core.executeAction
 
 fun <R> runInAction(fn: ()->R ): R {
-    return executeAction0("", false, fn)
+    return executeAction("", false, fn)
 }

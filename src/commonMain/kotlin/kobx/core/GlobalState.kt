@@ -13,6 +13,7 @@ fun resetKobx() {
 }
 
 class State {
+    var suppressReactionErrors: Boolean = false
     var inBatch: Int = 0
     var trackingDerivation: IDerivation? = null
     var trackingContext: IComputedValue<*>? = null

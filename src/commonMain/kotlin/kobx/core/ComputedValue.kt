@@ -34,7 +34,7 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
     override var lowestObserverState: DerivationState = DerivationState.UP_TO_DATE
     override var unboundDepsCount: Int = 0
     override var mapId: String = "#${GlobalState.nextId()}"
-    var value: T? = null
+    var value: ResultOrError<T>? = null
     override var name: String = opts.name ?: "ComputedValue@${GlobalState.nextId()}"
     var triggeredBy: String? = null
     var isComputing: Boolean = false
@@ -45,7 +45,7 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
     var scope: Any? = opts.context
     var requiresReaction: Boolean = opts.requiresReaction
     var keepAlive: Boolean = opts.keepAlive
-    override var requiresObservable: Boolean = true
+    override var requiresObservable: Boolean? = true
     override var onBUOL: MutableSet<() -> Unit> = mutableSetOf()
     override var onBOL: MutableSet<() -> Unit> = mutableSetOf()
 
@@ -91,7 +91,10 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
                 GlobalState.trackingContext = prev
             }
         }
-        return value!!
+        if( value?.error!=null ) {
+            throw value!!.error!!
+        }
+        return value!!.result!!
     }
 
     override fun set(value: T) {
@@ -116,13 +119,21 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
         return changed
     }
 
-    fun computeValue(track: Boolean) : T {
+    fun computeValue(track: Boolean) : ResultOrError<T> {
         isComputing = true
         val prev = GlobalState.allowStateChangesStart(false)
         val result = if( track ){
             trackDerivedFunction(derivation)
         } else {
-            derivation()
+            if( GlobalState.disableErrorBoundaries ){
+                ResultOrError(derivation())
+            } else {
+                try {
+                    ResultOrError(derivation())
+                } catch (e:Throwable){
+                    ResultOrError(null, e)
+                }
+            }
         }
         GlobalState.allowStateChangesEnd(prev)
         isComputing = false

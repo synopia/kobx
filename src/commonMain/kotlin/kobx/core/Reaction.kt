@@ -10,8 +10,8 @@ data class ReactionDisposer(
 class Reaction(
     override var name: String = "Reaction@${GlobalState.nextId()}",
     val onInvalidate: Reaction.()->Unit,
-    val errorHandler: ((error: Error, derivation: IDerivation)->Unit)? = null,
-    override var requiresObservable: Boolean = false
+    val errorHandler: (IDerivation.(error: Throwable)->Unit)? = null,
+    override var requiresObservable: Boolean? = false
 ): IDerivation, IReaction {
 
     override var observing: MutableList<IObservable> = mutableListOf()
@@ -45,7 +45,11 @@ class Reaction(
             isScheduled = false
             if( shouldCompute() ) {
                 isTrackPending = true
-                onInvalidate()
+                try {
+                    onInvalidate()
+                } catch (e: Throwable) {
+                    reportExceptionInDerivation(e)
+                }
             }
             GlobalState.endBatch()
         }
@@ -66,7 +70,24 @@ class Reaction(
         if( isDisposed ) {
             clearObserving()
         }
+        if( result.error!=null ) {
+            reportExceptionInDerivation(result.error)
+        }
         GlobalState.endBatch()
+    }
+
+    private fun reportExceptionInDerivation(e: Throwable) {
+        if( errorHandler!=null ) {
+            errorHandler.invoke(this, e)
+            return
+        }
+        if( GlobalState.disableErrorBoundaries) {
+            throw e
+        }
+        if( !GlobalState.suppressReactionErrors ) {
+            e.printStackTrace()
+        }
+//        GlobalState
     }
 
     override fun dispose() {
