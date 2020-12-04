@@ -1,7 +1,6 @@
 package kobx
 
 import kobx.api.Kobx
-import kobx.api.Observable
 import kobx.api.autorun
 import kobx.core.ComputedValue
 import kobx.core.ComputedValueOptions
@@ -15,7 +14,7 @@ class TestList {
     }
     @Test
     fun test1() {
-        val a = Observable.list(mutableListOf<Int>())
+        val a = Kobx.list(mutableListOf<Int>())
         assertEquals(0, a.size)
         assertEquals(listOf(), a)
 
@@ -74,7 +73,7 @@ class TestList {
 
     @Test
     fun testObserve() {
-        val ar = Observable.listOf(1, 4)
+        val ar = Kobx.listOf(1, 4)
         val buf = mutableListOf<ListDidChange<Int>>()
         val disposer = ar.observe({ buf += it}, true)
 
@@ -101,7 +100,7 @@ class TestList {
 
     @Test
     fun testModification1() {
-        val a = Observable.listOf(1,2,3)
+        val a = Kobx.listOf(1,2,3)
         val r = a.splice(-10, 5, 4, 5, 6)
         assertEquals(listOf(4,5,6), a)
         assertEquals(listOf(1,2,3), r)
@@ -109,7 +108,7 @@ class TestList {
 
     @Test
     fun testString() {
-        val x = Kobx.observable(mutableListOf(1))
+        val x = Kobx.listOf(1)
         var c=0
         Kobx.autorun {
             println(x.toString())
@@ -120,7 +119,7 @@ class TestList {
     }
     @Test
     fun testSorting() {
-        val x = Observable.listOf(4,2,3)
+        val x = Kobx.listOf(4,2,3)
         val sortedX = ComputedValue(ComputedValueOptions({ x.sorted() }))
         var sorted = emptyList<Int>()
         Kobx.autorun {

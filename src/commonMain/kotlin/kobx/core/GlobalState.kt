@@ -46,7 +46,7 @@ class State {
         if( inBatch==0 ) {
             runReactions()
 
-            pendingUnobservations.forEach { obs->
+            pendingUnobservations.toList().forEach { obs->
                 obs.isPendingUnobservation = false
                 if( obs.observers.isEmpty() ) {
                     if( obs.isBeingObserved ) {

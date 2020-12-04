@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 class TestReaction {
     @Test
     fun testBasic() {
-        val a = Kobx.observable(1)
+        val a = Kobx.box(1)
         val values : MutableList<Pair<Int,Int>> = mutableListOf()
 
         val d = Kobx.reaction({ a.get() }, { new,old-> values+=Pair(new,old)})
@@ -24,7 +24,7 @@ class TestReaction {
 
     @Test
     fun testFireImmediately() {
-        val a = Kobx.observable(1)
+        val a = Kobx.box(1)
         val values : MutableList<Int> = mutableListOf()
         val d= Kobx.reaction({ a.get() }, { new, _ ->values+=new}, AutorunOptions(fireImmediately =true))
 
@@ -38,8 +38,8 @@ class TestReaction {
 
     @Test
     fun testUntracked() {
-        val a = Kobx.observable(1)
-        val b = Kobx.observable(2)
+        val a = Kobx.box(1)
+        val b = Kobx.box(2)
         val values = mutableListOf<Int>()
 
         val d = Kobx.reaction({a.get()}, {new,_->values += new*b.get()}, AutorunOptions(fireImmediately = true))

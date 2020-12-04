@@ -2,6 +2,8 @@ package kobx.core
 
 import kobx.api.Kobx
 import kobx.api.autorun
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 interface IComputedValue<T> {
     fun get(): T
@@ -9,7 +11,7 @@ interface IComputedValue<T> {
     fun observe(listener: (ComputedDidChange<T>)->Unit, fireImmediately: Boolean = false) : ReactionDisposer
 }
 
-data class ComputedDidChange<T>(val newValue: T?, val oldValue: T?)
+data class ComputedDidChange<T>(val newValue: T, val oldValue: T?)
 
 data class ComputedValueOptions<T>(
     val get: ()->T,
@@ -17,11 +19,12 @@ data class ComputedValueOptions<T>(
     val name: String? = null,
     val context: Any? = null,
     val requiresReaction: Boolean = false,
-    val keepAlive: Boolean = false
+    val keepAlive: Boolean = true
 )
 
 
-class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedValue<T>, IDerivation {
+class ComputedValue<T>(opts: ComputedValueOptions<T>):
+    IObservable, IComputedValue<T>, IDerivation, ReadWriteProperty<Any, T> {
     override var dependenciesState: DerivationState = DerivationState.NOT_TRACKING
     override var observing: MutableList<IObservable> = mutableListOf()
     override var newObserving: MutableList<IObservable>? = null
@@ -34,7 +37,7 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
     override var lowestObserverState: DerivationState = DerivationState.UP_TO_DATE
     override var unboundDepsCount: Int = 0
     override var mapId: String = "#${GlobalState.nextId()}"
-    private var value: ResultOrError<T>? = null
+    internal var value: ResultOrError<T>? = null
     override var name: String = opts.name ?: "ComputedValue@${GlobalState.nextId()}"
     private var isComputing: Boolean = false
     var isRunningSetter: Boolean = false
@@ -174,6 +177,15 @@ class ComputedValue<T>(opts: ComputedValueOptions<T>): IObservable, IComputedVal
 
     override fun toString(): String {
         return "$name[$derivation]"
+    }
+
+
+    override fun getValue(thisRef: Any, property: KProperty<*>): T {
+        return get()
+    }
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
+        set(value)
     }
 
 }

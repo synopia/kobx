@@ -9,13 +9,13 @@ import kotlin.test.assertFails
 
 class TestErrorHandling {
     class Foo(x: Int) {
-        var x: Int? by Kobx.observable(x)
+        var x: Int by Kobx.box(x)
         fun y() : Int {
             return Kobx.computed {
                 if( x==2) {
                     throw IllegalStateException("xxx")
                 }
-                x!!*2
+                x*2
             }.get()
         }
     }
@@ -85,5 +85,27 @@ class TestErrorHandling {
         assertEquals(6,b)
         checkState()
 
+    }
+
+    @Test
+    fun testChangeInAutorun() {
+        val x = Kobx.box(3)
+        val z = Kobx.box(3)
+
+        Kobx.autorun {
+            if( x.get()!=3) {
+                z.set(x.get())
+            }
+        }
+
+        assertEquals(3, x.get())
+        assertEquals(3, z.get())
+
+        x.set(5)
+
+        assertEquals(5, x.get())
+        assertEquals(5, z.get())
+
+        checkState()
     }
 }
