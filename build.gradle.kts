@@ -1,5 +1,12 @@
+val kotlinVersion = "1.4.20"
+val serializationVersion = "1.0.1"
+
+
 plugins {
-    kotlin("multiplatform") version "1.4.10"
+    kotlin("multiplatform") version "1.4.20"
+    kotlin("plugin.serialization") version "1.4.20"
+
+    id("maven-publish")
 }
 
 group = "com.github"
@@ -7,6 +14,12 @@ version = "0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven("https://kotlin.bintray.com/kotlin-js-wrappers/")
+    maven {
+        setUrl("https://dl.bintray.com/kotlin/kotlin-eap")
+    }
+    jcenter()
+
 }
 
 kotlin {
@@ -39,20 +52,37 @@ kotlin {
 
     
     sourceSets {
-        val commonMain by getting
+        val commonMain by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
+            }
+        }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$serializationVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
+            }
+        }
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
             }
         }
-        val jsMain by getting
+        val jsMain by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-js:$serializationVersion")
+
+                implementation("org.jetbrains:kotlin-react:17.0.0-pre.129-kotlin-1.4.20")
+
+            }
+        }
         val jsTest by getting {
             dependencies {
                 implementation(kotlin("test-js"))

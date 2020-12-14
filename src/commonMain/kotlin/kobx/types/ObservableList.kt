@@ -3,8 +3,12 @@ package kobx.types
 import kobx.core.Atom
 import kobx.core.GlobalState
 import kobx.core.IAtom
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 enum class ListChangeType {
     Update,
@@ -25,19 +29,20 @@ data class ListWillChange<T>(
             ListWillChange(obj, ListChangeType.Splice, index, null, added, removed)
     }
 }
+@Serializable
 data class ListDidChange<T>(
-    val obj: IObservableList<T>,
-    val type: ListChangeType,
+    @Contextual val obj: ObservableList<T>,
+    val changeType: ListChangeType,
     val index: Int,
     val newValue: T? = null,
     val oldValue: T? = null,
     val added: List<T>? = null,
     val removed: List<T>? = null
-) {
+) : DidChange(){
     companion object {
-        fun <T> update(obj: IObservableList<T>, index: Int, newValue: T, oldValue: T?) =
+        fun <T> update(obj: ObservableList<T>, index: Int, newValue: T, oldValue: T?) =
             ListDidChange(obj, ListChangeType.Update, index, newValue, oldValue)
-        fun <T> splice(obj: IObservableList<T>, index: Int, added: List<T>, removed: List<T>) =
+        fun <T> splice(obj: ObservableList<T>, index: Int, added: List<T>, removed: List<T>) =
             ListDidChange(obj, ListChangeType.Splice, index, null, null, added, removed)
     }
 
@@ -58,7 +63,12 @@ interface IObservableList<T>: MutableList<T> {
 class ObservableList<T>(
     initialData: List<T>,
     name: String = "ObservableList@${GlobalState.nextId()}"
-): MutableList<T>, IObservableList<T>, IInterceptable<ListWillChange<T>>, IListenable<ListDidChange<T>>  {
+): MutableList<T>,
+    IObservableList<T>,
+    IInterceptable<ListWillChange<T>>,
+    IListenable<ListDidChange<T>>,
+    ReadWriteProperty<Any, List<T>>
+{
     internal val list = initialData.toMutableList()
     override var interceptors: MutableList<IInterceptor<ListWillChange<T>>>? = null
     override var changeListeners: MutableList<(ListDidChange<T>) -> Unit>? = null
@@ -302,5 +312,11 @@ class ObservableList<T>(
         return "${atom.name}[${this.joinToString(", ")}]"
     }
 
+    override fun getValue(thisRef: Any, property: KProperty<*>) : List<T> {
+        return this
+    }
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: List<T>) {
+        replace(value)
+    }
 }
 

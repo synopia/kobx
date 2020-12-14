@@ -3,6 +3,7 @@ package kobx
 import kobx.api.AutorunOptions
 import kobx.api.Kobx
 import kobx.api.reaction
+import kobx.core.Reaction
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -51,5 +52,22 @@ class TestReaction {
         a.set(4)
 
         assertEquals(listOf(2,4,21), values)
+    }
+
+    @Test
+    fun testWithList() {
+        var count = 0
+        val r = Reaction("bla", { count++ })
+        val obs = Kobx.listOf(1)
+        r.track {
+            obs.forEach {
+                println(it)
+            }
+        }
+        assertEquals(0, count)
+
+        obs.splice(1,0,5)
+
+        assertEquals(1, count)
     }
 }

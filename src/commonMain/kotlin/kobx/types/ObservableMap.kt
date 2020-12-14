@@ -5,6 +5,8 @@ import kobx.api.transaction
 import kobx.core.Atom
 import kobx.core.GlobalState
 import kobx.core.IAtom
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 enum class MapChangeType {
     Update,
@@ -36,13 +38,14 @@ data class MapWillChange<K,V>(
     }
 }
 
+@Serializable
 data class MapDidChange<K,V>(
-    val obj: IObservableMap<K,V>,
+    @Contextual val obj: IObservableMap<K,V>,
     val type: MapChangeType,
     val key: K,
     val newValue: V? = null,
     val oldValue: V? = null
-) {
+) : DidChange() {
     companion object {
         fun <K,V> update(obj: IObservableMap<K,V>, key: K, newValue: V, oldValue: V?) =
             MapDidChange(obj, MapChangeType.Update, key, newValue, oldValue)

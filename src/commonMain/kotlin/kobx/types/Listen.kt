@@ -1,6 +1,10 @@
 package kobx.types
 
 import kobx.core.GlobalState
+import kotlinx.serialization.Serializable
+
+@Serializable
+abstract class DidChange
 
 interface IListenable<T> {
     var changeListeners: MutableList<(T)->Unit>?
