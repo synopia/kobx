@@ -1,10 +1,10 @@
-val kotlinVersion = "1.4.20"
+val kotlinVersion = "1.4.21"
 val serializationVersion = "1.0.1"
-
+val kotlinReactVersion = "17.0.1-pre.144-kotlin-1.4.21"
 
 plugins {
-    kotlin("multiplatform") version "1.4.20"
-    kotlin("plugin.serialization") version "1.4.20"
+    kotlin("multiplatform") version "1.4.21"
+    kotlin("plugin.serialization") version "1.4.21"
 
     id("maven-publish")
 }
@@ -41,16 +41,16 @@ kotlin {
             }
         }
     }
-    val hostOs = System.getProperty("os.name")
-    val isMingwX64 = hostOs.startsWith("Windows")
-    val nativeTarget = when {
-        hostOs == "Mac OS X" -> macosX64("native")
-        hostOs == "Linux" -> linuxX64("native")
-        isMingwX64 -> mingwX64("native")
-        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
-    }
+//    val hostOs = System.getProperty("os.name")
+//    val isMingwX64 = hostOs.startsWith("Windows")
+//    val nativeTarget = when {
+//        hostOs == "Mac OS X" -> macosX64("native")
+//        hostOs == "Linux" -> linuxX64("native")
+//        isMingwX64 -> mingwX64("native")
+//        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
+//    }
 
-    
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -79,7 +79,7 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-js:$serializationVersion")
 
-                implementation("org.jetbrains:kotlin-react:17.0.0-pre.129-kotlin-1.4.20")
+                implementation("org.jetbrains:kotlin-react:$kotlinReactVersion")
 
             }
         }
@@ -88,7 +88,7 @@ kotlin {
                 implementation(kotlin("test-js"))
             }
         }
-        val nativeMain by getting
-        val nativeTest by getting
+//        val nativeMain by getting
+//        val nativeTest by getting
     }
 }

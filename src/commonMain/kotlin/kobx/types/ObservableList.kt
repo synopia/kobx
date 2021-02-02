@@ -3,13 +3,15 @@ package kobx.types
 import kobx.core.Atom
 import kobx.core.GlobalState
 import kobx.core.IAtom
-import kotlinx.serialization.Contextual
+import kobx.remote.EntityManager
+import kobx.remote.ListDidChangeSerializer
 import kotlinx.serialization.Serializable
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
+@Serializable
 enum class ListChangeType {
     Update,
     Splice
@@ -29,9 +31,9 @@ data class ListWillChange<T>(
             ListWillChange(obj, ListChangeType.Splice, index, null, added, removed)
     }
 }
-@Serializable
+@Serializable(with = ListDidChangeSerializer::class)
 data class ListDidChange<T>(
-    @Contextual val obj: ObservableList<T>,
+    val obj: ObservableList<T>,
     val changeType: ListChangeType,
     val index: Int,
     val newValue: T? = null,
@@ -43,9 +45,18 @@ data class ListDidChange<T>(
         fun <T> update(obj: ObservableList<T>, index: Int, newValue: T, oldValue: T?) =
             ListDidChange(obj, ListChangeType.Update, index, newValue, oldValue)
         fun <T> splice(obj: ObservableList<T>, index: Int, added: List<T>, removed: List<T>) =
-            ListDidChange(obj, ListChangeType.Splice, index, null, null, added, removed)
+            ListDidChange(obj, ListChangeType.Splice, index, null, null, listOrNull(added), listOrNull(removed))
+        private fun<T> listOrNull(list:List<T>): List<T>? = if (list.isEmpty()) null else list
     }
 
+    override fun apply(em: EntityManager) {
+        when(changeType) {
+            ListChangeType.Update->obj.set(index, newValue!!)
+            ListChangeType.Splice->{
+                obj.spliceWithArray(index, removed?.size ?: 0, added!!)
+            }
+        }
+    }
 }
 
 
@@ -89,11 +100,13 @@ class ObservableList<T>(
         atom.checkIfStateModificationsAreAllowed()
         val oldValue = list[index]
         var new = element
-        if( hasInterceptors() ) {
-            new = interceptChange(ListWillChange.update(this, index, new))?.newValue ?: new
+        if(oldValue!=new) {
+            if (hasInterceptors()) {
+                new = interceptChange(ListWillChange.update(this, index, new))?.newValue ?: new
+            }
+            list[index] = new
+            notifyListChildUpdate(index, new, oldValue)
         }
-        list[index] = new
-        notifyListChildUpdate(index, new, oldValue)
         return oldValue
     }
 

@@ -1,10 +1,13 @@
 package kobx.types
 
 import kobx.core.GlobalState
+import kobx.remote.EntityManager
 import kotlinx.serialization.Serializable
 
 @Serializable
-abstract class DidChange
+abstract class DidChange {
+    abstract fun apply(em: EntityManager)
+}
 
 interface IListenable<T> {
     var changeListeners: MutableList<(T)->Unit>?

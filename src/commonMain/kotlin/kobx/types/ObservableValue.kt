@@ -2,15 +2,9 @@ package kobx.types
 
 import kobx.core.Atom
 import kobx.core.GlobalState
-import kobx.core.IObservable
-import kotlinx.serialization.*
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.descriptors.element
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.encoding.encodeStructure
+import kobx.remote.EntityManager
+import kobx.remote.ValueDidChangeSerializer
+import kotlinx.serialization.Serializable
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -19,33 +13,16 @@ data class ValueWillChange<T>(
     val newValue: T
 )
 
-object ValueDidChangeSerializerInt: KSerializer<ValueDidChange<Int>> {
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("VDC") {
-        element<Int>("i")
-        element<Int>("n")
-        element<Int?>("o")
-    }
-
-    override fun deserialize(decoder: Decoder): ValueDidChange<Int> {
-
-    }
-
-    @ExperimentalSerializationApi
-    override fun serialize(encoder: Encoder, value: ValueDidChange<Int>) {
-        encoder.encodeStructure(descriptor) {
-            encodeIntElement(descriptor, 0, 0)
-            encodeIntElement(descriptor, 1, value.newValue)
-            encodeNullableSerializableElement(descriptor, 2, Int.serializer(), value.oldValue)
-        }
-    }
-}
-
-@Serializable(with = ValueDidChangeSerializerInt::class)
-data class ValueDidChange<out T>(
-    @Contextual val obj: ObservableValue<out T>,
+@Serializable(with = ValueDidChangeSerializer::class)
+data class ValueDidChange<T>(
+    val obj: ObservableValue<T>,
     val newValue: T,
     val oldValue: T?
-) : DidChange()
+) : DidChange() {
+    override fun apply(em: EntityManager) {
+        obj.set(newValue)
+    }
+}
 
 internal data class ChangedValue<T>(val value: T, val hasChanged: Boolean)
 
