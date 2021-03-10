@@ -42,22 +42,49 @@ data class ListAttribute<T>(
     override val name: String,
     override val id: Int,
     val obs: ObservableList<T>
-): Attribute<List<T>> {
-    override val default: List<T> = obs.list.toList()
+): Attribute<MutableList<T>> {
+    override val default: MutableList<T> = obs.list.toMutableList()
 
-    override fun current(): List<T> {
+    override fun current(): MutableList<T> {
         return obs.list
     }
 
-    override fun getValue(thisRef: Any, property: KProperty<*>): List<T> {
+    override fun getValue(thisRef: Any, property: KProperty<*>): MutableList<T> {
         return obs
     }
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: List<T>) {
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: MutableList<T>) {
         obs.replace(value)
     }
 
     override fun createEvent(): DidChange {
         return ListDidChange(obs, ListChangeType.Splice, 0, added = obs.list)
+    }
+}
+
+data class MapAttribute<K,V>(
+    override val entity: Entity,
+    override val name: String,
+    override val id: Int,
+    val obs: ObservableMap<K,V>
+): Attribute<MutableMap<K,V>> {
+    override val default: MutableMap<K, V> = obs
+
+    override fun current(): MutableMap<K, V> {
+        return obs
+    }
+
+    override fun getValue(thisRef: Any, property: KProperty<*>): MutableMap<K, V> {
+        return obs
+    }
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: MutableMap<K, V>) {
+        obs.clear()
+        obs.putAll(value)
+    }
+
+    override fun createEvent(): DidChange {
+        throw IllegalStateException()
+//        return MapDidChange(obs, MapChangeType.Add)
     }
 }

@@ -15,9 +15,7 @@ version = "0.1-SNAPSHOT"
 repositories {
     mavenCentral()
     maven("https://kotlin.bintray.com/kotlin-js-wrappers/")
-    maven {
-        setUrl("https://dl.bintray.com/kotlin/kotlin-eap")
-    }
+    maven("https://dl.bintray.com/kotlin/kotlin-eap")
     jcenter()
 
 }
@@ -78,9 +76,7 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-js:$serializationVersion")
-
                 implementation("org.jetbrains:kotlin-react:$kotlinReactVersion")
-
             }
         }
         val jsTest by getting {

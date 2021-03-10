@@ -2,6 +2,8 @@ package kobx.remote
 
 import kobx.api.KobxProvider
 import kobx.types.DidChange
+import kobx.types.ObservableList
+import kobx.types.ObservableMap
 import kobx.types.ObservableValue
 import kotlinx.serialization.Serializable
 
@@ -29,8 +31,9 @@ object EntityFactory {
     }
 }
 
-abstract class BaseEntity(override val id : Int, val em: EntityManager): Entity {
+abstract class BaseEntity(val em: EntityManager, override val id: Int = 0): Entity {
     override val attributes = mutableListOf<Attribute<*>>()
+    override val type = ""
 
     init {
         em.addEntity(this)
@@ -44,5 +47,28 @@ abstract class BaseEntity(override val id : Int, val em: EntityManager): Entity 
         }
     }
 
+    fun <T> list(vararg values: T): KobxProvider<MutableList<T>> {
+        return KobxProvider { e, name ->
+            val a = em.addAttribute(this, name, ObservableList(values.toList()))
+            attributes += a
+            a
+        }
+    }
+
+    fun <T> list(values: List<T>): KobxProvider<MutableList<T>> {
+        return KobxProvider { e, name ->
+            val a = em.addAttribute(this, name, ObservableList(values))
+            attributes += a
+            a
+        }
+    }
+
+    fun <K, V> map(values: Map<K,V>): KobxProvider<MutableMap<K,V>> {
+        return KobxProvider { e, name ->
+            val a = em.addAttribute(this, name, ObservableMap(values))
+            attributes += a
+            a
+        }
+    }
 }
 

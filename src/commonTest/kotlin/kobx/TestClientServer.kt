@@ -43,18 +43,18 @@ class TestClientServer {
             }
         }
     }
-    class User(id: Int, em: EntityManager): BaseEntity(id, em) {
+    class User(id: Int, em: EntityManager): BaseEntity(em, id) {
         override val type: String = "U"
 
         var username by box("")
     }
-    class Room(id: Int, em: EntityManager): BaseEntity(id, em) {
+    class Room(id: Int, em: EntityManager): BaseEntity(em, id) {
         override val type: String = "R"
 
         var title by box("")
 
     }
-    class Session(id: Int, em: EntityManager): BaseEntity(id, em) {
+    class Session(id: Int, em: EntityManager): BaseEntity(em, id) {
         override val type: String = "S"
 
         var sessionId by box("")

@@ -2,19 +2,8 @@ package kobx
 
 import kobx.remote.BaseEntityManager
 import kobx.remote.BaseEntity
-import kobx.remote.ListDidChangeSerializer
-import kobx.remote.ValueDidChangeSerializer
 import kobx.types.*
 import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -22,7 +11,7 @@ import kotlin.test.assertNotNull
 
 class TestSerialization {
     var f = BaseEntityManager()
-    val entity = object : BaseEntity(10, f) {
+    val entity = object : BaseEntity(f, 10) {
         override val type: String = "Foo"
     }
     val format = f.createJson()

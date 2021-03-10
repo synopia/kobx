@@ -243,6 +243,5 @@ class ObservableMap<K,V>(
 //            listener(ListDidChange.splice(this, 0, list.toList(), emptyList()))
 //        }
         return registerListener(listener)
-
     }
 }

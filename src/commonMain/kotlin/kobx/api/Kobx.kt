@@ -3,6 +3,7 @@ package kobx.api
 import kobx.core.ComputedValue
 import kobx.core.ComputedValueOptions
 import kobx.types.ObservableList
+import kobx.types.ObservableMap
 import kobx.types.ObservableValue
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -24,5 +25,6 @@ object Kobx  {
     fun <T> box(value: T) = ObservableValue(value)
     fun <T> list(values: List<T>) = ObservableList(values)
     fun <T> listOf(vararg values: T) = list(values.toList())
+    fun <K,V> map(values: Map<K,V>) = ObservableMap(values)
     fun <T> computed(get: () -> T) = ComputedValue(ComputedValueOptions(get))
 }

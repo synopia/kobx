@@ -11,7 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class TestEntities {
-    class Foo(id: Int, em: EntityManager) : BaseEntity(id, em) {
+    class Foo(id: Int, em: EntityManager) : BaseEntity(em, id) {
         override val type: String = "Foo"
         var bar : String by box("x")
     }
