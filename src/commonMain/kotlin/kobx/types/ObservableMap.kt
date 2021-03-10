@@ -5,7 +5,6 @@ import kobx.api.transaction
 import kobx.core.Atom
 import kobx.core.GlobalState
 import kobx.core.IAtom
-import kobx.remote.EntityManager
 import kotlinx.serialization.Serializable
 
 enum class MapChangeType {
@@ -55,13 +54,6 @@ data class MapDidChange<K,V>(
             MapDidChange(obj, MapChangeType.Delete, key, null, oldValue)
     }
 
-    override fun apply(em: EntityManager) {
-        when(type) {
-            MapChangeType.Update->obj[key]=newValue!!
-            MapChangeType.Add->obj[key]=newValue!!
-            MapChangeType.Delete->obj.remove(key)
-        }
-    }
 }
 
 interface IObservableMap<K,V>: MutableMap<K,V> {

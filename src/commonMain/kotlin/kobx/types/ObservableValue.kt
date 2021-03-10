@@ -2,9 +2,6 @@ package kobx.types
 
 import kobx.core.Atom
 import kobx.core.GlobalState
-import kobx.remote.EntityManager
-import kobx.remote.ValueDidChangeSerializer
-import kotlinx.serialization.Serializable
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -13,15 +10,11 @@ data class ValueWillChange<T>(
     val newValue: T
 )
 
-@Serializable(with = ValueDidChangeSerializer::class)
 data class ValueDidChange<T>(
     val obj: ObservableValue<T>,
     val newValue: T,
     val oldValue: T?
 ) : DidChange() {
-    override fun apply(em: EntityManager) {
-        obj.set(newValue)
-    }
 }
 
 internal data class ChangedValue<T>(val value: T, val hasChanged: Boolean)

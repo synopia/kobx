@@ -3,8 +3,6 @@ package kobx.types
 import kobx.core.Atom
 import kobx.core.GlobalState
 import kobx.core.IAtom
-import kobx.remote.EntityManager
-import kobx.remote.ListDidChangeSerializer
 import kotlinx.serialization.Serializable
 import kotlin.math.max
 import kotlin.math.min
@@ -31,7 +29,6 @@ data class ListWillChange<T>(
             ListWillChange(obj, ListChangeType.Splice, index, null, added, removed)
     }
 }
-@Serializable(with = ListDidChangeSerializer::class)
 data class ListDidChange<T>(
     val obj: ObservableList<T>,
     val changeType: ListChangeType,
@@ -49,14 +46,6 @@ data class ListDidChange<T>(
         private fun<T> listOrNull(list:List<T>): List<T>? = if (list.isEmpty()) null else list
     }
 
-    override fun apply(em: EntityManager) {
-        when(changeType) {
-            ListChangeType.Update->obj.set(index, newValue!!)
-            ListChangeType.Splice->{
-                obj.spliceWithArray(index, removed?.size ?: 0, added!!)
-            }
-        }
-    }
 }
 
 
